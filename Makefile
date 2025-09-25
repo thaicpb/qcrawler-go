@@ -23,7 +23,7 @@ CYAN=\033[0;36m
 WHITE=\033[0;37m
 NC=\033[0m # No Color
 
-.PHONY: help build install uninstall clean test fmt lint deps check run dev
+.PHONY: help build install uninstall clean test fmt lint deps check run dev create-build-dir build-all release info
 
 # Default target
 all: clean deps build
@@ -68,18 +68,18 @@ deps: check
 	@go mod tidy
 	@echo "$(GREEN)✓ Dependencies downloaded$(NC)"
 
-# Create build directory
-$(BUILD_DIR):
+# Create build directory  
+create-build-dir:
 	@mkdir -p $(BUILD_DIR)
 
 # Build the binary
-build: deps $(BUILD_DIR)
+build: deps create-build-dir
 	@echo "$(BLUE)Building $(BINARY_NAME) v$(VERSION)...$(NC)"
 	@CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME) ./cmd/qcrawler
 	@echo "$(GREEN)✓ Build complete: $(BUILD_DIR)/$(BINARY_NAME)$(NC)"
 
 # Build for all platforms
-build-all: deps $(BUILD_DIR)
+build-all: deps create-build-dir
 	@echo "$(BLUE)Building for all platforms...$(NC)"
 	@echo "$(YELLOW)Building for Linux (amd64)...$(NC)"
 	@GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build $(LDFLAGS) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 ./cmd/qcrawler
