@@ -9,14 +9,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/PuerkitoBio/goquery"
 	"golang.org/x/net/html"
 )
 
 type Config struct {
-	MaxDepth    int
-	Concurrency int
-	UserAgent   string
-	Timeout     int
+	MaxDepth     int
+	Concurrency  int
+	UserAgent    string
+	Timeout      int
+	CSSSelectors map[string]string // map[fieldName]cssSelector
 }
 
 type Crawler struct {
@@ -28,11 +30,12 @@ type Crawler struct {
 }
 
 type Page struct {
-	URL        string    `json:"url"`
-	Title      string    `json:"title"`
-	Content    string    `json:"content"`
-	Links      []string  `json:"links"`
-	CrawledAt  time.Time `json:"crawled_at"`
+	URL           string            `json:"url"`
+	Title         string            `json:"title"`
+	Content       string            `json:"content"`
+	Links         []string          `json:"links"`
+	CrawledAt     time.Time         `json:"crawled_at"`
+	SelectorData  map[string]string `json:"selector_data,omitempty"` // CSS selector extracted data
 }
 
 func NewCrawler(config Config) *Crawler {
@@ -146,6 +149,7 @@ func (c *Crawler) fetchPage(targetURL string) (Page, error) {
 	}
 	
 	c.parseHTML(string(body), &page)
+	c.extractSelectorData(string(body), &page)
 	
 	return page, nil
 }
@@ -207,4 +211,32 @@ func (c *Crawler) toAbsoluteURL(baseURL, link string) string {
 	}
 	
 	return base.ResolveReference(parsedLink).String()
+}
+
+func (c *Crawler) extractSelectorData(htmlContent string, page *Page) {
+	if len(c.config.CSSSelectors) == 0 {
+		return
+	}
+
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(htmlContent))
+	if err != nil {
+		return
+	}
+
+	page.SelectorData = make(map[string]string)
+
+	for fieldName, selector := range c.config.CSSSelectors {
+		var extractedTexts []string
+		
+		doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+			text := strings.TrimSpace(s.Text())
+			if text != "" {
+				extractedTexts = append(extractedTexts, text)
+			}
+		})
+		
+		if len(extractedTexts) > 0 {
+			page.SelectorData[fieldName] = strings.Join(extractedTexts, " | ")
+		}
+	}
 }
