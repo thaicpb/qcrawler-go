@@ -1,0 +1,19 @@
+{
+  "max_depth": 2,
+  "concurrency": 5,
+  "user_agent": "GoWebCrawler/1.0",
+  "timeout": 10,
+  "allowed_domains": [],
+  "exclude_patterns": [
+    ".*\\.(jpg|jpeg|png|gif|svg|ico|css|js|pdf|zip)$"
+  ],
+  "css_selectors": {
+    "headings": "h1, h2, h3, h4, h5, h6",
+    "paragraphs": "p",
+    "meta_description": "meta[name='description']",
+    "nav_links": "nav a, .navbar a, .menu a",
+    "article_content": "article, .content, .post-content",
+    "breadcrumb": ".breadcrumb, .breadcrumbs",
+    "footer_text": "footer p, .footer p"
+  }
+}

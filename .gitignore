@@ -19,12 +19,14 @@ go.work
 go.work.sum
 
 # Build output
-crawler
-/crawler
+build/
+qcrawler
+/qcrawler
 
 # Output files
 output.json
-*.json
+test*.json
+results.json
 
 # IDE specific files
 .idea/
